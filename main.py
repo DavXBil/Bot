@@ -4,8 +4,7 @@ import os
 from discord.ext import commands,tasks
 from dotenv import load_dotenv
 
-from MusicCog import Music
-
+from Classes.MusicCog import Music
 
 
 load_dotenv()
