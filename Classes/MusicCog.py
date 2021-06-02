@@ -1,3 +1,5 @@
+import asyncio
+
 import discord
 import os
 
@@ -5,38 +7,65 @@ from discord.ext import commands,tasks
 
 from .YoutubeDL import YTDLSource
 
-class UserNotInVoiceChannel(Exception):
+class UserNotInVoiceChannelError(Exception):
     pass
 
 
 class Music(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
+
         self.bot = bot
+   
 
     @commands.command(name="play")
     async def playSongFromUrl(self, ctx, *,search: str):
 
-        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
-        
-        await ctx.voice_client.play(source)
+        voiceClient = ctx.voice_client
+
+        async with ctx.typing():
+
+            source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
+
+            voiceClient.play(source)
+
 
     @commands.command(name="pause")
     async def pauseSong(self, ctx):
         
-        song = ctx.voice_client
+        voiceClient = ctx.voice_client
 
-        if(song.is_paused()):
+        if voiceClient.is_paused():
             await ctx.send("Song already paused")
         else:
-            await song.pause()
+            voiceClient.pause()
+
     
     @commands.command(name="stop")
     async def stopSong(self, ctx):
-        
-        song = ctx.voice_client
 
-        await song.stop()
+        voiceClient = ctx.voice_client
+
+        if voiceClient.is_playing():
+            voiceClient.stop()
+
+        else:
+            await ctx.send("Nothing to stop")
+
+    @commands.command(name='resume')
+    async def resumeSong(self, ctx):
+
+        voiceClient = ctx.voice_client
+
+        if voiceClient.is_paused():   
+            voiceClient.resume()
+
+        elif voiceClient.is_playing():
+            await ctx.send("Song is not paused")
+
+        else:
+            await ctx.send("No Song is playing")   
+
 
     @playSongFromUrl.before_invoke
     async def checkConnectionToVoiceChannel(self, ctx):
@@ -44,12 +73,9 @@ class Music(commands.Cog):
         userInVoiceChannel = ctx.author.voice
         botInVoiceChannel = ctx.voice_client
 
-        print(userInVoiceChannel) 
-        print(botInVoiceChannel)
-
         if not userInVoiceChannel:
             await ctx.send("You're not connected to a voice channel")
-            raise commands.CommandError()
+            raise UserNotInVoiceChannelError()
             
         else:
 
@@ -59,14 +85,14 @@ class Music(commands.Cog):
             else:
                 await userInVoiceChannel.channel.connect()
 
+
     @commands.command(name="leave")
     async def leaveVoiceChannel(self, ctx):
 
         await ctx.voice_client.disconnect()
 
+
     @commands.command(name="test")
     async def test(self, ctx):
-        
-        testVariable = ctx.voice_client
 
-        print(testVariable)
+        await ctx.send("bonjour")
