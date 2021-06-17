@@ -41,6 +41,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.requester = ctx.author
         self.channel = ctx.channel
         self.data = data
+
+        self.uploader = data.get('uploader')
         self.title = data.get('title')
         self.thumbnail = data.get('thumbnail')
         self.tags = data.get('tags')

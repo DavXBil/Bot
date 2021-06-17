@@ -6,6 +6,8 @@ import os
 from discord.ext import commands,tasks
 
 from .YoutubeDL import YTDLSource
+from .Queue import SongQueue
+from.AudioPlayer import AudioPlayer
 
 class UserNotInVoiceChannelError(Exception):
     pass
@@ -16,18 +18,36 @@ class Music(commands.Cog):
     def __init__(self, bot: commands.Bot):
 
         self.bot = bot
-   
+        self.songs = SongQueue()
+        self.audio_players = {}
+
+    
+    def get_audio_player(self, ctx: commands.Context):
+        state = self.audio_players.get(ctx.guild.id)
+        if not state:
+            state = AudioPlayer(self.bot, ctx)
+            self.audio_players[ctx.guild.id] = state
+
+        return state
+
+    
+    async def cog_before_invoke(self, ctx: commands.Context):
+        ctx.audio_player = self.get_audio_player(ctx)
+
 
     @commands.command(name="play")
-    async def playSongFromUrl(self, ctx, *,search: str):
-
-        voiceClient = ctx.voice_client
+    async def playSongFromUrl(self, ctx, *, search: str):
 
         async with ctx.typing():
 
             source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
 
-            voiceClient.play(source)
+            await ctx.audio_player.songs.put(source)
+
+    
+    async def queue(self, ctx):
+
+        await self.songs.put(ctx)
 
 
     @commands.command(name="pause")
@@ -51,6 +71,7 @@ class Music(commands.Cog):
 
         else:
             await ctx.send("Nothing to stop")
+            
 
     @commands.command(name='resume')
     async def resumeSong(self, ctx):
@@ -79,10 +100,7 @@ class Music(commands.Cog):
             
         else:
 
-            if botInVoiceChannel:
-                await ctx.send("I'm already in a voice chat")
-                return
-            else:
+            if not botInVoiceChannel:
                 await userInVoiceChannel.channel.connect()
 
 
@@ -95,4 +113,8 @@ class Music(commands.Cog):
     @commands.command(name="test")
     async def test(self, ctx):
 
-        await ctx.send("bonjour")
+        userInVoiceChannel = ctx.author.voice
+        botInVoiceChannel = ctx.voice_client
+
+        print(userInVoiceChannel)
+        print(botInVoiceChannel)
