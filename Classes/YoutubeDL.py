@@ -41,13 +41,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.requester = ctx.author
         self.channel = ctx.channel
         self.data = data
-
         self.uploader = data.get('uploader')
+        self.uploader_url = data.get('uploader_url')
         self.title = data.get('title')
         self.thumbnail = data.get('thumbnail')
         self.tags = data.get('tags')
         self.url = data.get('webpage_url')
         self.stream_url = data.get('url')
+        self.duration = self.parse_duration(int(data.get('duration')))
         
 
     def __str__(self):
@@ -97,3 +98,20 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         return cls(ctx, discord.FFmpegPCMAudio(info['url'], **cls.FFMPEG_OPTIONS), data=info)
     
+    def parse_duration(self, duration: int):
+
+        minutes, seconds = divmod(duration, 60)
+        hours, minutes = divmod(minutes, 60)
+        days, hours = divmod(hours, 24)
+
+        duration = []
+        if days > 0:
+            duration.append('{} days'.format(days))
+        if hours > 0:
+            duration.append('{} hours'.format(hours))
+        if minutes > 0:
+            duration.append('{} minutes'.format(minutes))
+        if seconds > 0:
+            duration.append('{} seconds'.format(seconds))
+
+        return ', '.join(duration)

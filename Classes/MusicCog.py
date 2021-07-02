@@ -18,14 +18,16 @@ class Music(commands.Cog):
     def __init__(self, bot: commands.Bot):
 
         self.bot = bot
-        self.songs = SongQueue()
         self.audio_players = {}
 
     
     def get_audio_player(self, ctx: commands.Context):
+
         state = self.audio_players.get(ctx.guild.id)
+
         if not state:
             state = AudioPlayer(self.bot, ctx)
+
             self.audio_players[ctx.guild.id] = state
 
         return state
@@ -44,10 +46,8 @@ class Music(commands.Cog):
 
             await ctx.audio_player.songs.put(source)
 
-    
-    async def queue(self, ctx):
-
-        await self.songs.put(ctx)
+            if ctx.voice_client.is_playing():
+                await ctx.send("Song has been put to Queue")
 
 
     @commands.command(name="pause")
@@ -57,6 +57,7 @@ class Music(commands.Cog):
 
         if voiceClient.is_paused():
             await ctx.send("Song already paused")
+
         else:
             voiceClient.pause()
 
@@ -67,11 +68,17 @@ class Music(commands.Cog):
         voiceClient = ctx.voice_client
 
         if voiceClient.is_playing():
-            voiceClient.stop()
+            await ctx.audio_player.stop()
 
         else:
             await ctx.send("Nothing to stop")
-            
+
+    
+    @commands.command(name="skip")
+    async def skipSong(self, ctx):
+        
+        ctx.audio_player.skip()
+             
 
     @commands.command(name='resume')
     async def resumeSong(self, ctx):
