@@ -20,10 +20,10 @@ class AudioPlayer:
         self.next = asyncio.Event()
         self.songs = SongQueue()
         
-        self.audio_player = bot.loop.create_task(self.audio_player_task())
+        self.audio_player = bot.loop.create_task(self.player_task())
 
 
-    async def audio_player_task(self):
+    async def player_task(self):
 
         while True:
             self.next.clear()

@@ -39,7 +39,7 @@ class Music(commands.Cog):
 
     @commands.command(name="play")
     async def playSongFromUrl(self, ctx, *, search: str):
-
+        
         async with ctx.typing():
 
             source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
@@ -52,7 +52,7 @@ class Music(commands.Cog):
 
     @commands.command(name="pause")
     async def pauseSong(self, ctx):
-        
+        #Pauses playing song
         voiceClient = ctx.voice_client
 
         if voiceClient.is_paused():
@@ -64,7 +64,7 @@ class Music(commands.Cog):
     
     @commands.command(name="stop")
     async def stopSong(self, ctx):
-
+        #Stops playing song, clears the queue
         voiceClient = ctx.voice_client
 
         if voiceClient.is_playing():
@@ -82,7 +82,7 @@ class Music(commands.Cog):
 
     @commands.command(name='resume')
     async def resumeSong(self, ctx):
-
+        #Resume paused song
         voiceClient = ctx.voice_client
 
         if voiceClient.is_paused():   
@@ -115,13 +115,3 @@ class Music(commands.Cog):
     async def leaveVoiceChannel(self, ctx):
 
         await ctx.voice_client.disconnect()
-
-
-    @commands.command(name="test")
-    async def test(self, ctx):
-
-        userInVoiceChannel = ctx.author.voice
-        botInVoiceChannel = ctx.voice_client
-
-        print(userInVoiceChannel)
-        print(botInVoiceChannel)
