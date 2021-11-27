@@ -4,7 +4,7 @@ import itertools
 
 
 class SongQueue(asyncio.Queue) :
-
+    """playlist queue class"""
     def __getitem__(self, item):
         if isinstance(item, slice):
             return list(itertools.islice(self._queue, item.start, item.stop, item.step))
@@ -22,3 +22,4 @@ class SongQueue(asyncio.Queue) :
 
     def remove(self, index: int):
         del self._queue[index]
+        

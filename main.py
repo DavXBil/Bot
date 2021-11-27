@@ -1,12 +1,10 @@
-import asyncio
-
-import discord
 import os
 
-from discord.ext import commands,tasks
+
+from discord.ext import commands
 from dotenv import load_dotenv
 
-from Classes.MusicCog import Music
+from Classes.music_cog import Music
 
 
 load_dotenv()
@@ -20,6 +18,7 @@ bot.add_cog(Music(bot))
 
 @bot.event
 async def on_ready():
+    """Message when bot is ready"""
     print('ready')
 
 bot.run(token)

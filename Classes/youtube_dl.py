@@ -34,8 +34,11 @@ class YTDLSource(discord.PCMVolumeTransformer):
     ytdl = youtube_dl.YoutubeDL(YTDL_OPTIONS)
 
 
-    def __init__(self, ctx: commands.Context, source: discord.FFmpegPCMAudio, *, data: dict, volume: float = 0.5):
-        
+    def __init__(
+        self, ctx: commands.Context, source: discord.FFmpegPCMAudio, *,
+        data: dict, volume: float = 0.5
+        ):
+
         super().__init__(source, volume)
 
         self.requester = ctx.author
@@ -49,16 +52,19 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.url = data.get('webpage_url')
         self.stream_url = data.get('url')
         self.duration = self.parse_duration(int(data.get('duration')))
-        
+
 
     def __str__(self):
 
         return '**{0.title}** by **{0.uploader}**'.format(self)
-        
+
 
     @classmethod
-    async def create_source(cls, ctx: commands.Context, search: str, *, loop: asyncio.BaseEventLoop = None):
-       
+    async def create_source(
+        cls, ctx: commands.Context,
+        search: str, *, loop: asyncio.BaseEventLoop = None
+        ):
+
         loop = loop or asyncio.get_event_loop()
 
         partial = functools.partial(cls.ytdl.extract_info, search, download=False, process=False)
@@ -94,12 +100,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
                 try:
                     info = processed_info['entries'].pop(0)
                 except IndexError:
-                    raise YTDLError('Couldn\'t retrieve any matches for `{}`'.format(webpage_url))
+                    raise YTDLError(
+                        'Couldn\'t retrieve any matches for `{}`'.format(webpage_url)
+                        ) from None
 
         return cls(ctx, discord.FFmpegPCMAudio(info['url'], **cls.FFMPEG_OPTIONS), data=info)
-    
-    def parse_duration(self, duration: int):
 
+    def parse_duration(self, duration: int):
+        """parses song's duration time"""
         minutes, seconds = divmod(duration, 60)
         hours, minutes = divmod(minutes, 60)
         days, hours = divmod(hours, 24)

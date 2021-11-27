@@ -1,15 +1,13 @@
 import asyncio
 
-from async_timeout import timeout
-
-from .Queue import SongQueue
-from .Song import Embed
+from .queue import SongQueue
+from .song import Embed
 
 class VoiceError(Exception):
     pass
 
 class AudioPlayer:
-
+    """Manage the song reading"""
     def __init__(self, bot, ctx):
 
         self.bot = bot
@@ -19,15 +17,16 @@ class AudioPlayer:
         self.voice = ctx.voice_client
         self.next = asyncio.Event()
         self.songs = SongQueue()
-        
+
         self.audio_player = bot.loop.create_task(self.player_task())
 
 
     async def player_task(self):
-
+        """plays the song, displays song informations"""
         while True:
+
             self.next.clear()
-           
+
             self.current = await self.songs.get()
 
             embed = Embed(self.current)
@@ -40,6 +39,7 @@ class AudioPlayer:
 
 
     def play_next_song(self, error=None):
+        """plays next song"""
         if error:
             raise VoiceError(str(error))
 
@@ -47,10 +47,12 @@ class AudioPlayer:
 
 
     def skip(self):
+        """skip the current playing song"""
         if self.voice.is_playing:
             self.voice.stop()
-            
+
 
     async def stop(self):
+        """stops song playing, call clear method from SongQueue class"""
         self.songs.clear()
         self.voice.stop()
