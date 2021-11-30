@@ -7,7 +7,7 @@ class VoiceError(Exception):
     pass
 
 class AudioPlayer:
-    """Manage the song reading"""
+    """Manages the song playing"""
     def __init__(self, bot, ctx):
 
         self.bot = bot
