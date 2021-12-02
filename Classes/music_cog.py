@@ -41,7 +41,9 @@ class Music(commands.Cog):
             await ctx.audio_player.songs.put(source)
 
             if ctx.voice_client.is_playing():
-                await ctx.send("Song has been put to Queue")
+                queue_size = len(ctx.audio_player.songs)
+                await ctx.send("Song has been put to Queue, There is now " + str(queue_size) + " item(s) in queue.")            
+
 
 
     @commands.command(name="pause")
