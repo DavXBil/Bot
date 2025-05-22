@@ -1,7 +1,7 @@
 import asyncio
 
-from .queue import SongQueue
-from .song import Embed
+from Classes.Queue import SongQueue
+from Classes.Song import Embed
 
 class VoiceError(Exception):
     pass

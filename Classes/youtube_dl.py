@@ -2,7 +2,7 @@ import asyncio
 import functools
 
 import discord
-import youtube_dl
+from yt_dlp import YoutubeDL
 from discord.ext import commands
 
 class YTDLError(Exception):
@@ -28,10 +28,10 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
     FFMPEG_OPTIONS = {
         'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-        'options': '-vn',
+        'options': '-vn -af aresample=resampler=soxr',
     }
 
-    ytdl = youtube_dl.YoutubeDL(YTDL_OPTIONS)
+    ytdl = YoutubeDL(YTDL_OPTIONS)
 
 
     def __init__(
@@ -54,23 +54,33 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.duration = self.parse_duration(int(data.get('duration')))
 
 
+    # @classmethod
+    # async def create_source(
+    #     cls, ctx: commands.Context,
+    #     search: str, *, loop: asyncio.AbstractEventLoop
+    #     ):
+    #     """extract info from url"""
+    #
+    #     partial = functools.partial(cls.ytdl.extract_info, search, download=False, process=False)
+    #     data = await loop.run_in_executor(None, partial)
+    #
+    #     webpage_url = data['webpage_url']
+    #     partial = functools.partial(cls.ytdl.extract_info, webpage_url, download=False)
+    #     processed_info = await loop.run_in_executor(None, partial)
+    #
+    #     return cls(ctx, discord.FFmpegPCMAudio(processed_info['url'], **cls.FFMPEG_OPTIONS),
+    #         data = processed_info)
     @classmethod
-    async def create_source(
-        cls, ctx: commands.Context,
-        search: str, *, loop: asyncio.AbstractEventLoop
-        ):
-        """extract info from url"""
-
-        partial = functools.partial(cls.ytdl.extract_info, search, download=False, process=False)
+    async def create_source(cls, ctx, search: str, *, loop, download=False):
+        loop = loop or asyncio.get_event_loop()
+        partial = functools.partial(cls.ytdl.extract_info, search, download=download)
         data = await loop.run_in_executor(None, partial)
 
-        webpage_url = data['webpage_url']
-        partial = functools.partial(cls.ytdl.extract_info, webpage_url, download=False)
-        processed_info = await loop.run_in_executor(None, partial)
+        if 'entries' in data:
+            data = data['entries'][0]
 
-        return cls(ctx, discord.FFmpegPCMAudio(processed_info['url'], **cls.FFMPEG_OPTIONS),
-            data = processed_info)
-
+        filename = data['url'] if not download else cls.ytdl.prepare_filename(data)
+        return cls(ctx, discord.FFmpegPCMAudio(filename, **cls.FFMPEG_OPTIONS), data=data)
 
     def parse_duration(self, duration: int):
         """parses song's duration time"""

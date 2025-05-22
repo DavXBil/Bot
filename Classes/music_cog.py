@@ -14,7 +14,6 @@ class Music(commands.Cog):
         self.bot = bot
         self.audio_players = {}
 
-
     def get_audio_player(self, ctx: commands.Context):
         """gets the audio player"""
         state = self.audio_players.get(ctx.guild.id)
@@ -26,25 +25,20 @@ class Music(commands.Cog):
 
         return state
 
-
     async def cog_before_invoke(self, ctx: commands.Context):
         ctx.audio_player = self.get_audio_player(ctx)
-
 
     @commands.command(name="play")
     async def play_song_from_url(self, ctx, *, search: str):
         """Plays a song from a youtube url"""
         async with ctx.typing():
-
             source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
 
             await ctx.audio_player.songs.put(source)
 
             if ctx.voice_client.is_playing():
                 queue_size = len(ctx.audio_player.songs)
-                await ctx.send("Song has been put to Queue, There is now " + str(queue_size) + " item(s) in queue.")            
-
-
+                await ctx.send("Song has been put to Queue, There is now " + str(queue_size) + " item(s) in queue.")
 
     @commands.command(name="pause")
     async def pause_song(self, ctx):
@@ -57,7 +51,6 @@ class Music(commands.Cog):
         else:
             voice_client.pause()
 
-
     @commands.command(name="stop")
     async def stop_song(self, ctx):
         """Calls the stop method from the Audioplayer class"""
@@ -69,12 +62,10 @@ class Music(commands.Cog):
         else:
             await ctx.send("Nothing to stop")
 
-
     @commands.command(name="skip")
     async def skip_song(self, ctx):
         """skips the currently playing song"""
         ctx.audio_player.skip()
-
 
     @commands.command(name='resume')
     async def resume_song(self, ctx):
@@ -90,7 +81,6 @@ class Music(commands.Cog):
         else:
             await ctx.send("No Song is playing")
 
-
     @play_song_from_url.before_invoke
     async def check_connection_to_voice_channel(self, ctx):
         """Check user's connection to a voice channel"""
@@ -105,7 +95,6 @@ class Music(commands.Cog):
 
             if not bot_in_voice_channel:
                 await user_in_voice_channel.channel.connect()
-
 
     @commands.command(name="leave")
     async def leave_voice_channel(self, ctx):
